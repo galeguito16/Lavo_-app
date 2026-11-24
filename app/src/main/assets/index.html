@@ -1,0 +1,149 @@
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#102d49">
+<title>LAVÔ - Lavanderia na sua porta</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#f3f7fb;color:#18334c;font-family:Arial,sans-serif}
+header{background:#102d49;color:white;padding:22px;font-size:27px;font-weight:bold}
+main{padding:18px;max-width:500px;margin:auto}
+.hero{background:linear-gradient(135deg,#102d49,#2675df);color:white;padding:25px;border-radius:20px}
+button{border:0;border-radius:12px;padding:13px;background:#21c1b5;color:#073844;font-weight:bold;margin:5px 0;cursor:pointer}
+.card{background:white;border-radius:15px;padding:16px;margin:12px 0;border:1px solid #e4edf5}
+input,select,textarea{width:100%;padding:13px;margin:7px 0;border:1px solid #ccd9e5;border-radius:10px}
+nav{position:fixed;bottom:0;background:white;width:100%;display:flex;justify-content:space-around;padding:10px}
+nav button{background:white;color:#102d49;font-size:12px}
+.page{display:none;padding-bottom:85px}
+.page.active{display:block}
+h2{font-size:20px}
+small{color:#71869a}
+</style>
+</head>
+<body>
+<header>LAVÔ.</header>
+<main>
+<section id="inicio" class="page active">
+<div class="hero">
+<h1>Roupa limpa.<br>Tempo livre.</h1>
+<p>Você pede. A gente busca. Sua roupa volta limpa.</p>
+<button onclick="show('agendar')">Agendar coleta</button>
+</div>
+<h2>Nossos serviços</h2>
+<div class="card">👕 Roupas do dia a dia</div>
+<div class="card">🛏️ Edredons e cobertores</div>
+<div class="card">👔 Lavar e passar</div>
+<div class="card">👟 Limpeza de tênis</div>
+<div class="card">🚚 Coleta e entrega na sua casa</div>
+<h2>Como funciona</h2>
+<div class="card">📲 Solicite → 🚚 Buscamos → 🫧 Lavamos → 🏠 Entregamos</div>
+</section>
+
+<section id="agendar" class="page">
+<h2>Agendar coleta 🧺</h2>
+<form id="pedido">
+<label>Nome</label>
+<input id="nome" required placeholder="Seu nome">
+<label>WhatsApp</label>
+<input id="telefone" required placeholder="Seu telefone">
+<label>Endereço</label>
+<input id="endereco" required placeholder="Rua, número, bairro">
+<label>Serviço</label>
+<select id="servico">
+<option>Roupas do dia a dia</option>
+<option>Edredons e cobertores</option>
+<option>Lavar e passar</option>
+<option>Limpeza de tênis</option>
+<option>Roupas delicadas</option>
+<option>Outros itens</option>
+</select>
+<label>Data desejada</label>
+<input id="data" type="date" required>
+<label>Horário</label>
+<select id="horario">
+<option>8h às 10h</option>
+<option>10h às 12h</option>
+<option>13h às 15h</option>
+<option>15h às 18h</option>
+</select>
+<label>Observações</label>
+<textarea id="obs" placeholder="Detalhes do pedido"></textarea>
+<button type="submit">Solicitar coleta</button>
+</form>
+<p id="resultado"></p>
+</section>
+
+<section id="pedidos" class="page">
+<h2>Meus pedidos</h2>
+<div id="lista">Você ainda não fez pedidos.</div>
+</section>
+
+<section id="perfil" class="page">
+<h2>Meu perfil</h2>
+<div class="card">👤 Cliente LAVÔ</div>
+<div class="card">Endereços e dados pessoais: disponíveis futuramente.</div>
+<h2>Painel demonstrativo</h2>
+<button onclick="show('admin')">Abrir painel administrativo</button>
+</section>
+
+<section id="admin" class="page">
+<h2>Painel LAVÔ</h2>
+<div class="card">Pedidos registrados neste aparelho: <strong id="total">0</strong></div>
+<div class="card">Lavanderias parceiras: integração futura.</div>
+<div class="card">Entregadores: integração futura.</div>
+<div class="card">Pagamentos: integração futura.</div>
+<div id="adminlista"></div>
+</section>
+</main>
+
+<nav>
+<button onclick="show('inicio')">⌂ Início</button>
+<button onclick="show('agendar')">🧺 Agendar</button>
+<button onclick="show('pedidos')">📦 Pedidos</button>
+<button onclick="show('perfil')">👤 Perfil</button>
+</nav>
+
+<script>
+function show(id){
+document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+document.getElementById(id).classList.add('active');
+if(id==='pedidos'||id==='admin') atualizar();
+}
+function carregar(){
+try{return JSON.parse(localStorage.getItem('lavo_pedidos')||'[]')}
+catch(e){return []}
+}
+document.getElementById('pedido').addEventListener('submit',function(e){
+e.preventDefault();
+const pedido={
+id:'LAVO-'+Date.now(),
+nome:document.getElementById('nome').value,
+telefone:document.getElementById('telefone').value,
+endereco:document.getElementById('endereco').value,
+servico:document.getElementById('servico').value,
+data:document.getElementById('data').value,
+horario:document.getElementById('horario').value,
+obs:document.getElementById('obs').value,
+status:'Solicitação recebida'
+};
+const pedidos=carregar();
+pedidos.unshift(pedido);
+localStorage.setItem('lavo_pedidos',JSON.stringify(pedidos));
+document.getElementById('resultado').textContent='Pedido registrado neste aparelho! Número: '+pedido.id+'. Ainda não foi enviado a uma lavanderia.';
+this.reset();
+atualizar();
+});
+function atualizar(){
+const pedidos=carregar();
+document.getElementById('total').textContent=pedidos.length;
+document.getElementById('lista').innerHTML=pedidos.length?pedidos.map(p=>'<div class="card"><strong>'+p.servico+'</strong><p>'+p.id+'</p><p>'+p.data+' - '+p.horario+'</p><p>'+p.status+'</p></div>').join(''):'Você ainda não fez pedidos.';
+document.getElementById('adminlista').innerHTML=pedidos.map(p=>'<div class="card">'+p.id+' - '+p.nome+'<br>'+p.servico+'</div>').join('');
+}
+atualizar();
+</script>
+</body>
+  </html>
+  
